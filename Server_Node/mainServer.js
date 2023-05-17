@@ -20,15 +20,14 @@ wss.on("connection", function connection(client) {
     console.log(receivedMessage.opcode);
 
     if (receivedMessage.opcode == findMatchOp) {
-      newMatchRequest(client);
+      newMatchRequest(client.id);
     }
   });
 
   client.on("close", function close() {
     console.log(`Client ${client.id} disconnected`);
-    var clientId = client.id;
-    delete clientConnections[clientId];
-    deleteMatchRequest(clientId);
+    delete clientConnections[client.id];
+    deleteMatchRequest(client.id);
   });
   client.send("hello");
 });
@@ -63,6 +62,7 @@ function deletePlayer(clientId) {
   if (index !== -1) {
     players.splice(index, 1);
   }
+  console.log(players.length);
 }
 
 function checkPlayerList() {
