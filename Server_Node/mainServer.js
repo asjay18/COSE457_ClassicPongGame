@@ -78,11 +78,19 @@ function checkPlayerList() {
     console.log("gameroom established!");
     sendMessage(
       players[0],
-      JSON.stringify({ opcode: foundMatchOp, newGameRoom })
+      JSON.stringify({
+        uuid: players[0],
+        opcode: foundMatchOp,
+        newGameRoom,
+      })
     );
     sendMessage(
       players[1],
-      JSON.stringify({ opcode: foundMatchOp, newGameRoom })
+      JSON.stringify({
+        uuid: players[1],
+        opcode: foundMatchOp,
+        gameRoom: newGameRoom,
+      })
     );
     players.splice(0, 2);
   }

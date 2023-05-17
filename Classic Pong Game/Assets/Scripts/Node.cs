@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 using WebSocketSharp;
@@ -9,7 +10,7 @@ public class Node : MonoBehaviour
     public GameObject nodeObject;
 
     private WebSocket _webSocket;
-    private string _webSocketDns = "ws://127.0.0.1:3333";
+    private string _webSocketDns = "ws://43.201.68.58:3333";
 
     private bool intentionalClose = false;
 
@@ -20,10 +21,9 @@ public class Node : MonoBehaviour
     public const string YouWonOp = "91";
     public const string YouLostOp = "92";
     
-    void Start()
+    void Awake()
     {
-        DontDestroyOnLoad(nodeObject);
-        Debug.Log("start is called!");
+        DontDestroyOnLoad(this.gameObject);
     }
     private void SetupWsCallbacks()
     {
@@ -76,9 +76,16 @@ public class Node : MonoBehaviour
         if (gameMessage.opcode == ResponseFoundMatchOp)
         {
             Debug.Log("you can play!");
-            try { 
-                GameObject.Find("SceneManager").GetComponent<WaitForPlayer>().SetFoundMatch(true); 
-            } catch {
+            try
+            {
+                var playerId = gameMessage.uuid;
+                GameRoom gameRoom = JsonUtility.FromJson<GameRoom>(gameMessage.gameRoom);
+                if (gameRoom.player1 == playerId) PlayerPrefs.SetString("PlayerSide", "left");
+                else PlayerPrefs.SetString("PlayerSide", "right");
+
+                WaitForPlayer.SetFoundMatch(true);
+            } catch (Exception e) {
+                Debug.Log(e);
                 Debug.Log("Game can't start...");
             }
         }

@@ -5,16 +5,10 @@ using UnityEngine;
 public class RightSide : MonoBehaviour
 {
     // Start is called before the first frame update
-    public bool isPlayerOnRight = true;
+    public bool isPlayerOnRight;
 
-    void Start()
+    public void ChangePlayerSide(bool isOnRight)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        isPlayerOnRight = isOnRight;
     }
 }

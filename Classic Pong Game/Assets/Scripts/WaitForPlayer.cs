@@ -14,7 +14,7 @@ public class WaitForPlayer : MonoBehaviour
     private int i = 0;
     private readonly string[] dots = { "", ".", "..", "..." };
 
-    private bool foundMatch;
+    private static bool foundMatch;
 
     private GameObject nodeObject;
 
@@ -27,6 +27,7 @@ public class WaitForPlayer : MonoBehaviour
         nodeObject = GameObject.Find("Node");
         nodeObject.GetComponent<Node>().FindMatch();
 
+        Debug.Log("starting couroutine");
         StartCoroutine(CheckForPlayer());
     }
     public void OnDestroy()
@@ -53,7 +54,7 @@ public class WaitForPlayer : MonoBehaviour
 
         // 서버로부터 상대방이 입장했다는 연락을 받으면 scene 로딩 시작!
         AsyncOperation operation = SceneManager.LoadSceneAsync(loadGameScene);
-        operation.allowSceneActivation = false;
+        operation.allowSceneActivation = true;
         while (!operation.isDone)
         {
             yield return null;
@@ -64,7 +65,7 @@ public class WaitForPlayer : MonoBehaviour
     }
     
 
-    public void SetFoundMatch(bool found)
+    public static void SetFoundMatch(bool found)
     {
         if (found) foundMatch = true;
         else foundMatch = false;
