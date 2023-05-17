@@ -20,7 +20,7 @@ wss.on("connection", function connection(client) {
     console.log(receivedMessage.opcode);
 
     if (receivedMessage.opcode == findMatchOp) {
-      await newMatchRequest(client);
+      newMatchRequest(client);
     }
   });
 
@@ -28,13 +28,19 @@ wss.on("connection", function connection(client) {
     console.log(`Client ${client.id} disconnected`);
     var clientId = client.id;
     delete clientConnections[clientId];
+    deleteMatchRequest(clientId);
   });
   client.send("hello");
 });
 
-function newMatchRequest(client) {
-  console.log(`client ${client.id} waiting for new match...`);
-  newPlayer(client.id);
+function newMatchRequest(clientId) {
+  console.log(`client ${clientId} waiting for new match...`);
+  newPlayer(clientId);
+}
+
+function deleteMatchRequest(clientId) {
+  console.log(`client ${clientId} left the game...`);
+  deletePlayer(clientId);
 }
 
 function sendMessage(clientId, message) {
@@ -47,21 +53,20 @@ var gameRooms = [];
 
 var isBusy = false;
 
-function newPlayer(player) {
-  players.push(player);
-  var wait = true;
-  while (wait) {
-    if (!isBusy) {
-      console.log("check!");
-      checkPlayerList();
-      break;
-    }
+function newPlayer(clientId) {
+  players.push(clientId);
+  checkPlayerList();
+}
+
+function deletePlayer(clientId) {
+  var index = players.indexOf(clientId);
+  if (index !== -1) {
+    players.splice(index, 1);
   }
 }
 
 function checkPlayerList() {
-  isBusy = true;
-  if (players.length > 2) {
+  if (players.length >= 2) {
     var newGameRoom = {
       player1: players[0],
       player2: players[1],
@@ -78,5 +83,4 @@ function checkPlayerList() {
     );
     players.splice(0, 2);
   }
-  isBusy = false;
 }
