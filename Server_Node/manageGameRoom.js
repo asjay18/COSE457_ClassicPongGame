@@ -15,9 +15,6 @@ function newPlayer(player) {
   }
 }
 
-module.exports = { newPlayer };
-
-const { sendMessage } = require("./mainServer");
 var foundMatchOp = "6";
 
 function checkPlayerList() {
@@ -32,6 +29,7 @@ function checkPlayerList() {
       setScore: (0, 0),
     };
     gameRooms.push(newGameRoom);
+    console.log("gameroom established!");
     sendMessage(
       players[0],
       JSON.stringify({ opcode: foundMatchOp, newGameRoom })
