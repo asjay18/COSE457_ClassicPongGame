@@ -11,9 +11,9 @@ var foundMatchOp = "6";
 var clientConnections = {};
 
 wss.on("connection", function connection(client) {
-  client.id = v4();
-  console.log(`Client ${client.id} connected`);
-  clientConnections[client.id] = client;
+  var playerUid = v4();
+  clientConnections[playerUid] = client;
+  client.id = playerUid;
 
   client.on("message", async function mss(receive) {
     receivedMessage = JSON.parse(receive);
@@ -29,7 +29,6 @@ wss.on("connection", function connection(client) {
     delete clientConnections[client.id];
     deleteMatchRequest(client.id);
   });
-  client.send("hello");
 });
 
 function newMatchRequest(clientId) {
@@ -79,6 +78,10 @@ function checkPlayerList() {
     console.log("gameroom established!");
     sendMessage(
       players[0],
+      JSON.stringify({ opcode: foundMatchOp, newGameRoom })
+    );
+    sendMessage(
+      players[1],
       JSON.stringify({ opcode: foundMatchOp, newGameRoom })
     );
     players.splice(0, 2);
