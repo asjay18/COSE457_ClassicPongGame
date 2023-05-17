@@ -8,6 +8,7 @@ function newPlayer(player) {
   var wait = true;
   while (wait) {
     if (!isBusy) {
+      console.log("check!");
       checkPlayerList();
       break;
     }
