@@ -9,6 +9,7 @@ var findMatchOp = "5";
 var foundMatchOp = "6";
 
 var ballPosChangeOp = "20";
+var ballVelUpdateOp = "21";
 
 var clientConnections = {};
 
@@ -115,5 +116,13 @@ function sendBallPos(fromClientId, message) {
     gameRoom.player1 == fromClientId ? gameRoom.player2 : gameRoom.player1;
   console.log(fromClientId);
   console.log(oponent);
-  //sendMessage(oponent, msg);
+  sendMessage(
+    oponent,
+    JSON.stringify({
+      uuid: oponent,
+      opcode: ballVelUpdateOp,
+      vectorx: message.x,
+      vectory: message.y,
+    })
+  );
 }
