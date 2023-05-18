@@ -61,6 +61,7 @@ public class WaitForPlayer : MonoBehaviour
             i = (i + 1) % 600;
             waitingText.text = "Found Match! Loading Game" + dots[(i / 150)];
         }
+        if (operation.isDone) operation.allowSceneActivation = true;
         
     }
     

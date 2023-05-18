@@ -81,7 +81,7 @@ function checkPlayerList() {
       JSON.stringify({
         uuid: players[0],
         opcode: foundMatchOp,
-        newGameRoom,
+        gameRoom: newGameRoom,
       })
     );
     sendMessage(
