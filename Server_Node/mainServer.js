@@ -8,6 +8,8 @@ console.log("Server opened on port 3333.");
 var findMatchOp = "5";
 var foundMatchOp = "6";
 
+var ballPosChangeOp = "20";
+
 var clientConnections = {};
 
 wss.on("connection", function connection(client) {
@@ -21,6 +23,10 @@ wss.on("connection", function connection(client) {
 
     if (receivedMessage.opcode == findMatchOp) {
       newMatchRequest(client.id);
+    }
+
+    if (receivedMessage.opcode == ballPosChangeOp) {
+      sendBallPos(client.id, receivedMessage.message);
     }
   });
 
@@ -94,4 +100,20 @@ function checkPlayerList() {
     );
     players.splice(0, 2);
   }
+}
+
+function getInGameRoom(clientId) {
+  return gameRooms.find(
+    (gameRoom) => gameRoom.player1 == clientId || gameRoom.player2 == clientId
+  );
+}
+
+function sendBallPos(fromClientId, message) {
+  console.log(message);
+  let gameRoom = getInGameRoom(fromClientId);
+  let oponent =
+    gameRoom.player1 == fromClientId ? gameRoom.player2 : gameRoom.player1;
+  console.log(fromClientId);
+  console.log(oponent);
+  //sendMessage(oponent, msg);
 }
