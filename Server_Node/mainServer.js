@@ -110,12 +110,17 @@ function getInGameRoom(clientId) {
 }
 
 function sendBallPos(fromClientId, message) {
-  console.log(message);
   let gameRoom = getInGameRoom(fromClientId);
   let oponent =
     gameRoom.player1 == fromClientId ? gameRoom.player2 : gameRoom.player1;
-  console.log(fromClientId);
-  console.log(oponent);
+  console.log(
+    JSON.stringify({
+      uuid: oponent,
+      opcode: ballVelUpdateOp,
+      vectorx: message.x,
+      vectory: message.y,
+    })
+  );
   sendMessage(
     oponent,
     JSON.stringify({
