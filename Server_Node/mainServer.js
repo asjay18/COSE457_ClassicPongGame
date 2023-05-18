@@ -27,7 +27,7 @@ wss.on("connection", function connection(client) {
     }
 
     if (receivedMessage.opcode == ballPosChangeOp) {
-      sendBallPos(client.id, receivedMessage.message);
+      sendBallPos(client.id, receivedMessage);
     }
   });
 
@@ -113,8 +113,6 @@ function sendBallPos(fromClientId, message) {
   let gameRoom = getInGameRoom(fromClientId);
   let oponent =
     gameRoom.player1 == fromClientId ? gameRoom.player2 : gameRoom.player1;
-  console.log("message!!!!!");
-  console.log(message);
   console.log(
     JSON.stringify({
       uuid: oponent,
