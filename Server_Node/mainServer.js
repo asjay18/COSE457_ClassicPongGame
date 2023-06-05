@@ -10,13 +10,15 @@ var playerReadyResOp = "8";
 
 var startGameOp = "10";
 
-var ballPosChangeOp = "20";
-var ballVelUpdateOp = "21";
-
 var playerMovementOp = "31";
 var oponentMovementOp = "32";
 
+var playerScoresOp = "40";
+var oponentScoresOp = "41";
+
 var oponentLeftOp = "90";
+var setEndOp = "98";
+var gameEndOp = "99";
 
 var clientConnections = {};
 
@@ -32,12 +34,12 @@ wss.on("connection", function connection(client) {
   client.on("message", async function mss(receive) {
     receivedMessage = JSON.parse(receive);
 
-    if (receivedMessage.opcode == ballPosChangeOp) {
-      sendBallPos(client.id, receivedMessage);
-    } else if (receivedMessage.opcode == playerReadyOp) {
+    if (receivedMessage.opcode == playerReadyOp) {
       checkPlayerReady(client.id);
     } else if (receivedMessage.opcode == playerMovementOp) {
       syncPlayerMovement(receivedMessage.playerData);
+    } else if (receivedMessage.opcode == playerScoresOp) {
+      playerScores(client.id);
     }
   });
 
@@ -119,10 +121,12 @@ function checkPlayerList() {
       p2status: false,
       player1: players[0],
       player2: players[1],
-      sets: 3,
       goal: 11,
-      gameScore: (0, 0),
-      setScore: (0, 0),
+      sets: 3,
+      p1GameScore: 0,
+      p2GameScore: 0,
+      p1SetScore: 0,
+      p2SetScore: 0,
     };
     gameRooms.push(newGameRoom);
     console.log("gameroom established!");
@@ -214,16 +218,90 @@ function syncPlayerMovement(playerData) {
   );
 }
 
-function sendBallPos(fromClientId, message) {
-  let gameRoom = getInGameRoom(fromClientId);
-  let oponent =
-    gameRoom.player1 == fromClientId ? gameRoom.player2 : gameRoom.player1;
+function playerScores(clientId) {
+  let gameRoom = getInGameRoom(clientId);
+  let oponentId;
+
+  if (gameRoom.player1 == clientId) {
+    console.log("player 1 scores");
+    oponentId = gameRoom.player2;
+    setGameRoomScore(1, gameRoom.id);
+  } else {
+    console.log("player 2 scores");
+    oponentId = gameRoom.player1;
+    setGameRoomScore(2, gameRoom.id);
+  }
+
   sendMessage(
-    oponent,
+    oponentId,
     JSON.stringify({
-      opcode: ballVelUpdateOp,
-      vectorx: message.x,
-      vectory: message.y,
+      opcode: oponentScoresOp,
+    })
+  );
+}
+
+function setGameRoomScore(scoredPlayer, gameRoomId) {
+  let gameRoom = gameRooms.find((gameRoom) => gameRoom.id == gameRoomId);
+
+  if (scoredPlayer == 1) {
+    gameRoom.p1GameScore += 1;
+    if (gameRoom.p1GameScore >= gameRoom.goal) {
+      gameRoom.p1GameScore = 0;
+      gameRoom.p2GameScore = 0;
+      gameRoom.p1SetScore += 1;
+      if (gameRoom.p1SetScore >= gameRoom.sets) {
+        gameEnds(1, gameRoom);
+      } else {
+        setEnds(1, gameRoom);
+      }
+    }
+  } else {
+    gameRoom.p2GameScore += 1;
+    console.log(`gameRoom player 2 score is now ${gameRoom.p2GameScore}`);
+    if (gameRoom.p2GameScore >= gameRoom.goal) {
+      gameRoom.p1GameScore = 0;
+      gameRoom.p2GameScore = 0;
+      gameRoom.p2SetScore += 1;
+      if (gameRoom.p2SetScore >= gameRoom.sets) {
+        gameEnds(2, gameRoom);
+      } else {
+        setEnds(2, gameRoom);
+      }
+    }
+  }
+}
+
+function gameEnds(winner, gameRoom) {
+  sendMessage(
+    gameRoom.player1,
+    JSON.stringify({
+      opcode: gameEndOp,
+      message: `PLAYER ${winner}`,
+    })
+  );
+  sendMessage(
+    gameRoom.player2,
+    JSON.stringify({
+      opcode: gameEndOp,
+      message: `PLAYER ${winner}`,
+    })
+  );
+}
+
+function setEnds(winner, gameRoom) {
+  console.log(`winner is player ${winner}!`);
+  sendMessage(
+    gameRoom.player1,
+    JSON.stringify({
+      opcode: setEndOp,
+      message: `PLAYER ${winner}`,
+    })
+  );
+  sendMessage(
+    gameRoom.player2,
+    JSON.stringify({
+      opcode: setEndOp,
+      message: `PLAYER ${winner}`,
     })
   );
 }
