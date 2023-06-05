@@ -6,11 +6,10 @@ public class Ball : MonoBehaviour
 {
     public float speed = 30.0f;
 
-    public GameObject rightSideGameObject;
-    private RightSide rightSideVariable;
-
     public GameObject inGameManagerGameObject;
     private InGameManager inGameManager;
+
+    private Node serverNode;
 
     float hitFactor(Vector2 ballPos, Vector2 paddlePos, float paddleHeight)
     {
@@ -19,38 +18,59 @@ public class Ball : MonoBehaviour
 
     void Start()
     {
-        rightSideVariable = rightSideGameObject.GetComponent<RightSide>();
         inGameManager = inGameManagerGameObject.GetComponent<InGameManager>();
+        
+        GameObject nodeObject = GameObject.Find("Node");
+        serverNode = nodeObject.GetComponent<Node>();
+    }
 
-        if (rightSideVariable.isPlayerOnRight)
+    private void OnEnable()
+    {
+        if (inGameManager == null) return;
+        gameObject.transform.position = new Vector3(0, 0, -1);
+        if (inGameManager.scoreSide == 1)
+        {
+            GetComponent<Rigidbody2D>().velocity = Vector2.left * speed;
+        }
+        else
         {
             GetComponent<Rigidbody2D>().velocity = Vector2.right * speed;
-            inGameManager.SendBallVel(Vector2.right * speed);
         }
-
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!rightSideVariable.isPlayerOnRight) return;
-
-        Vector2 newVelocity = new Vector2();
         if (collision.gameObject.name == "Paddle_R")
         {
-            float y = hitFactor(transform.position, collision.transform.position, collision.collider.bounds.size.y);
-            Vector2 dir = new Vector2(-1, y).normalized;
+            if (serverNode.playerData.sideNumber == 2)
+            {
+                float y = hitFactor(transform.position, collision.transform.position, collision.collider.bounds.size.y);
+                Vector2 dir = new Vector2(-1, y).normalized;
 
-            newVelocity = dir * speed * 1.05f;
-            GetComponent<Rigidbody2D>().velocity = newVelocity;
+                Vector2 newVelocity = 1.05f * speed * dir;
+                GetComponent<Rigidbody2D>().velocity = newVelocity;
+
+                serverNode.PlayerHits(
+                    new BallData(
+                        gameObject.transform.position.x,
+                        gameObject.transform.position.y,
+                        newVelocity.x, 
+                        newVelocity.y
+                    )
+                );
+            }
         }
-        if (collision.gameObject.name == "Paddle_L")
+        else if (collision.gameObject.name == "Paddle_L")
         {
-            float y = hitFactor(transform.position, collision.transform.position, collision.collider.bounds.size.y);
-            Vector2 dir = new Vector2(1, y).normalized;
+            if (serverNode.playerData.sideNumber == 1)
+            {
+                float y = hitFactor(transform.position, collision.transform.position, collision.collider.bounds.size.y);
+                Vector2 dir = new Vector2(1, y).normalized;
 
-            newVelocity = dir * speed * 1.05f;
-            GetComponent<Rigidbody2D>().velocity = newVelocity;
+                Vector2 newVelocity = 1.05f * speed * dir;
+                GetComponent<Rigidbody2D>().velocity = newVelocity;
+            }
+                
         }
-        inGameManager.SendBallVel(newVelocity);
     }
 }

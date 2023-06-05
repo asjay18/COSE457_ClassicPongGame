@@ -10,11 +10,14 @@ var playerReadyResOp = "8";
 
 var startGameOp = "10";
 
-var playerMovementOp = "31";
-var oponentMovementOp = "32";
+var playerMovementOp = "30";
+var oponentMovementOp = "31";
 
 var playerScoresOp = "40";
 var oponentScoresOp = "41";
+
+var playerHitsOp = "50";
+var oponentHitsOp = "51";
 
 var oponentLeftOp = "90";
 var setEndOp = "98";
@@ -40,6 +43,8 @@ wss.on("connection", function connection(client) {
       syncPlayerMovement(receivedMessage.playerData);
     } else if (receivedMessage.opcode == playerScoresOp) {
       playerScores(client.id);
+    } else if (receivedMessage.opcode == playerHitsOp) {
+      playerHits(client.id, receivedMessage.ballData);
     }
   });
 
@@ -56,6 +61,12 @@ function sendMessage(clientId, message) {
 
 var players = [];
 var gameRooms = [];
+
+function getInGameRoom(clientId) {
+  return gameRooms.find(
+    (gameRoom) => gameRoom.player1 == clientId || gameRoom.player2 == clientId
+  );
+}
 
 function newPlayer(clientId) {
   players.push(clientId);
@@ -86,10 +97,7 @@ function deletePlayer(clientId) {
 
 function deleteGameRoom(gameroomId) {
   const gameRoom = gameRooms.find((gameRoom) => gameRoom.id == gameroomId);
-  var index = gameRooms.indexOf(gameRoom);
-  if (index !== -1) {
-    gameRooms.splice(index, 1);
-  }
+
   try {
     sendMessage(
       gameRoom.player1,
@@ -109,6 +117,11 @@ function deleteGameRoom(gameroomId) {
     );
   } catch (error) {
     console.log("player2 already left");
+  }
+
+  var index = gameRooms.indexOf(gameRoom);
+  if (index !== -1) {
+    gameRooms.splice(index, 1);
   }
 }
 
@@ -176,15 +189,10 @@ function checkPlayerReady(clientId) {
   checkGameRoomReady(gameRoom);
 }
 
-function getInGameRoom(clientId) {
-  return gameRooms.find(
-    (gameRoom) => gameRoom.player1 == clientId || gameRoom.player2 == clientId
-  );
-}
-
 function checkGameRoomReady(gameroom) {
   if (gameroom.p1status && gameroom.p2status) {
     console.log("gameroom " + gameroom.id + " start game!");
+    console.log(gameroom);
     sendMessage(
       gameroom.player1,
       JSON.stringify({
@@ -269,6 +277,27 @@ function setGameRoomScore(scoredPlayer, gameRoomId) {
       }
     }
   }
+}
+
+function playerHits(clientId, ballData) {
+  let gameRoom = getInGameRoom(clientId);
+  let oponentId;
+
+  if (gameRoom.player1 == clientId) {
+    console.log("player 1 hits");
+    oponentId = gameRoom.player2;
+  } else {
+    console.log("player 2 hits");
+    oponentId = gameRoom.player1;
+  }
+
+  sendMessage(
+    oponentId,
+    JSON.stringify({
+      opcode: oponentHitsOp,
+      ballData: ballData,
+    })
+  );
 }
 
 function gameEnds(winner, gameRoom) {

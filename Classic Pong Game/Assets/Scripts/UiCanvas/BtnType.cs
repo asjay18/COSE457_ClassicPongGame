@@ -10,9 +10,14 @@ public class BtnType : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public Transform buttonScale;
     Vector3 defaultScale;
 
+    private GameObject nodeObject;
+    private Node serverNode;
+
     private void Start()
     {
         defaultScale = buttonScale.localScale;
+        nodeObject = GameObject.Find("Node");
+        serverNode = nodeObject.GetComponent<Node>();
     }
     public void OnBtnClick()
     {
@@ -25,10 +30,14 @@ public class BtnType : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
             case BTNType.GoToMain:
                 SceneManager.LoadScene("mainScene");
                 Debug.Log("대기 상태 해제");
+                serverNode.QuitGame();
                 break;
             case BTNType.Exit:
                 Application.Quit();
                 Debug.Log("나가기");
+                break;
+            case BTNType.Ready:
+                serverNode.PlayerIsReady();
                 break;
         }
     }

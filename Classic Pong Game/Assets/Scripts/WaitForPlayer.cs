@@ -16,7 +16,7 @@ public class WaitForPlayer : MonoBehaviour
 
     private static bool foundMatch;
 
-    private GameObject nodeObject;
+    private Node nodeObject;
 
     private void Start()
     {
@@ -24,16 +24,10 @@ public class WaitForPlayer : MonoBehaviour
         waitingText.text = "Waiting for Other Player";
 
         Debug.Log("send server waiting player");
-        nodeObject = GameObject.Find("Node");
-        nodeObject.GetComponent<Node>().FindMatch();
+        nodeObject = GameObject.Find("Node").GetComponent<Node>();
+        nodeObject.FindMatch();
 
-        Debug.Log("starting couroutine");
         StartCoroutine(CheckForPlayer());
-    }
-    public void OnDestroy()
-    {
-        Debug.Log("send server that i stop waiting!");
-        nodeObject.GetComponent<Node>().QuitGame();
     }
 
     public static void LoadGameSceneHandler(string _name, int _loadType)
@@ -61,11 +55,13 @@ public class WaitForPlayer : MonoBehaviour
             i = (i + 1) % 600;
             waitingText.text = "Found Match! Loading Game" + dots[(i / 150)];
         }
-        if (operation.isDone) operation.allowSceneActivation = true;
+        if (operation.isDone)
+        {
+            operation.allowSceneActivation = true;
+        }
         
     }
     
-
     public static void SetFoundMatch(bool found)
     {
         if (found) foundMatch = true;

@@ -7,10 +7,10 @@ public enum BTNType
 {
     PlayGame,
     GoToMain,
+    Ready,
     Exit,
     Option,
     Ranking,
-
 }
 
 public class MainUI : MonoBehaviour

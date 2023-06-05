@@ -15,24 +15,31 @@ public class ScoreManager : MonoBehaviour
     public TextMeshProUGUI plRoundText;
     public TextMeshProUGUI prRoundText;
 
+    public GameObject igmObject;
+    private InGameManager inGameManager;
+
     public void Start()
     {
         plScoreText.text = "0";
         prScoreText.text = "0";
         plRoundText.text = "0";
         prRoundText.text = "0";
+
+        inGameManager = igmObject.GetComponent<InGameManager>();
     }
     public void plWin()
     {
         plScore += 1;
-        if (plScore == 12)
+        if (plScore == 11)
         {
             plScore = 0;
+            prScore = 0;
+            prScoreText.text = prScore.ToString();
             plRound += 1;
             plRoundText.text = plRound.ToString();
-
         }
         plScoreText.text = plScore.ToString();
+        inGameManager.StartSet();
         if (plRound == 3)
         {
             endGame(1);
@@ -41,13 +48,16 @@ public class ScoreManager : MonoBehaviour
     public void prWin()
     {
         prScore += 1;
-        if (prScore == 12)
+        if (prScore == 11)
         {
             prScore = 0;
+            plScore = 0;
+            plScoreText.text = plScore.ToString();
             prRound += 1;
             prRoundText.text = prRound.ToString();
         }
         prScoreText.text = prScore.ToString();
+        inGameManager.StartSet();
         if (prRound == 3)
         {
             endGame(2);
