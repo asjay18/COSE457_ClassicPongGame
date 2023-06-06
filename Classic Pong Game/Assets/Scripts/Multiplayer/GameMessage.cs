@@ -18,7 +18,6 @@ public class GameMessage
         opcode = opcodeIn;
     }
 
-
     public GameMessage(string actionIn, string opcodeIn, PlayerData playerDataIn)
     {
         action = actionIn;

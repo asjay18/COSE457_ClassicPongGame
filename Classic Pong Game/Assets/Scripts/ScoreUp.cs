@@ -20,21 +20,24 @@ public class ScoreUp : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (serverNode.playerData.sideNumber == 1)
+        if (collision.gameObject.name == "Ball")
         {
-            if (rightwall)
+            if (serverNode.playerData.sideNumber == 1)
             {
-                scoreManager.plWin();
-                serverNode.PlayerScores();
+                if (rightwall)
+                {
+                    scoreManager.plWin();
+                    serverNode.PlayerScores();
+                }
             }
-        }
-        else
-        {
-            if (!rightwall)
+            else
             {
-                scoreManager.prWin();
-                serverNode.PlayerScores();
+                if (!rightwall)
+                {
+                    scoreManager.prWin();
+                    serverNode.PlayerScores();
+                }
             }
-        }
+        }        
     }
 }

@@ -24,8 +24,22 @@ public class BtnType : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         switch (currentType)
         {
             case BTNType.PlayGame:
-                WaitForPlayer.LoadGameSceneHandler("InGameScene", 0);
+                WaitForPlayer.LoadGameSceneHandler("InGameScene", 0, "");
+                SceneManager.LoadScene("WaitScene");
                 Debug.Log("새 게임 시작하기");
+                break;
+            case BTNType.PlayGameWithFriendHOST:
+                WaitForPlayer.LoadGameSceneHandler("InGameScene", 1, "");
+                SceneManager.LoadScene("WaitScene");
+                Debug.Log("친구와 새 게임 시작하기");
+                break;
+            case BTNType.PlayGameWithFriendCLIENT1:
+                SceneManager.LoadScene("CodeInputScene");
+                Debug.Log("친구게임에 참가하기");
+                break;
+            case BTNType.PlayGameWithFriendCLIENT2:
+                //SceneManager.LoadScene("codeInputScene");
+                Debug.Log("친구게임에 참가하기");
                 break;
             case BTNType.GoToMain:
                 SceneManager.LoadScene("mainScene");

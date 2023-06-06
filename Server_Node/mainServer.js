@@ -4,6 +4,17 @@ var wsServer = require("ws").Server;
 var wss = new wsServer({ port: 3333 });
 console.log("Server opened on port 3333.");
 
+var normalGameMatchOp = "0";
+var friendGameMatchOp = "1";
+var friendGameMatchClientOp = "2";
+
+var friendGameRoomNumberOp = "3";
+
+var joinGameErrorOp = "22"; //TODO
+
+var requestCheckRoomNumberOp = "4";
+var checkedRoomNumberOp = "5";
+
 var foundMatchOp = "6";
 var playerReadyOp = "7";
 var playerReadyResOp = "8";
@@ -27,12 +38,10 @@ var clientConnections = {};
 
 wss.on("connection", function connection(client) {
   var playerUid = uuid();
+  console.log(`new player ${playerUid}`);
 
   clientConnections[playerUid] = client;
   client.id = playerUid;
-
-  client.send(`{"id": "${client.id}"}`);
-  newPlayer(client.id);
 
   client.on("message", async function mss(receive) {
     receivedMessage = JSON.parse(receive);
@@ -45,6 +54,17 @@ wss.on("connection", function connection(client) {
       playerScores(client.id);
     } else if (receivedMessage.opcode == playerHitsOp) {
       playerHits(client.id, receivedMessage.ballData);
+    } else if (receivedMessage.opcode == normalGameMatchOp) {
+      client.send(`{"id": "${client.id}"}`);
+      newPlayer(client.id);
+    } else if (receivedMessage.opcode == friendGameMatchOp) {
+      client.send(`{"id": "${client.id}"}`);
+      makeFriendGameRoom(client.id);
+    } else if (receivedMessage.opcode == friendGameMatchClientOp) {
+      client.send(`{"id": "${client.id}"}`);
+      joinFriendGameRoom(client.id, receivedMessage.message);
+    } else if (receivedMessage.opcode == requestCheckRoomNumberOp) {
+      findFriendGameRoom(client.id, receivedMessage.message);
     }
   });
 
@@ -75,7 +95,11 @@ function newPlayer(clientId) {
 
 function deletePlayerAndGameRoom(clientId) {
   console.log(`client ${clientId} left the game...`);
-  deletePlayer(clientId);
+  try {
+    deletePlayer(clientId);
+  } catch (error) {
+    console.log(error);
+  }
   try {
     const gameRoom = getInGameRoom(clientId);
     if (gameRoom != undefined) {
@@ -125,6 +149,121 @@ function deleteGameRoom(gameroomId) {
   }
 }
 
+const generateRandomString = (length) => {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+function makeFriendGameRoom(clientId) {
+  var newGameRoom = {
+    id: generateRandomString(8),
+    status: "ready",
+    p1status: false,
+    p2status: false,
+    player1: clientId,
+    player2: "none",
+    goal: 11,
+    sets: 3,
+    p1GameScore: 0,
+    p2GameScore: 0,
+    p1SetScore: 0,
+    p2SetScore: 0,
+  };
+  gameRooms.push(newGameRoom);
+  console.log(`New friend game room : ${newGameRoom.id}`);
+  sendMessage(
+    clientId,
+    JSON.stringify({
+      opcode: friendGameRoomNumberOp,
+      message: newGameRoom.id,
+    })
+  );
+}
+
+function findFriendGameRoom(clientId, gameRoomId) {
+  if (gameRoomId.length != 8) {
+    sendMessage(
+      clientId,
+      JSON.stringify({
+        opcode: checkedRoomNumberOp,
+        message: "gameroom code should have 8 digits",
+      })
+    );
+    return;
+  }
+  var gameRoom = gameRooms.find((gameRoom) => gameRoom.id == gameRoomId);
+  if (gameRoom == undefined) {
+    sendMessage(
+      clientId,
+      JSON.stringify({
+        opcode: checkedRoomNumberOp,
+        message: "there's no such room",
+      })
+    );
+    return;
+  }
+
+  sendMessage(
+    clientId,
+    JSON.stringify({
+      opcode: checkedRoomNumberOp,
+      message: "join",
+      gameRoom: gameRoom,
+    })
+  );
+}
+
+function joinFriendGameRoom(clientId, gameRoomId) {
+  var gameRoom = gameRooms.find((gameRoom) => gameRoom.id == gameRoomId);
+
+  if (gameRoom == undefined) {
+    sendMessage(
+      clientId,
+      JSON.stringify({
+        opcode: joinGameErrorOp,
+        message: "there's no such room",
+      })
+    );
+    return;
+  }
+
+  if (gameRoom.player2 != "none") {
+    sendMessage(
+      clientId,
+      JSON.stringify({
+        opcode: joinGameErrorOp,
+        message: "the room already has 2 players",
+      })
+    );
+    return;
+  }
+
+  console.log(`Client ${clientId} join GameRoom ${gameRoom.id}`);
+  gameRoom.player2 = clientId;
+  console.log(gameRoom);
+
+  sendMessage(
+    gameRoom.player2,
+    JSON.stringify({
+      opcode: foundMatchOp,
+      gameRoom: gameRoom,
+    })
+  );
+  sendMessage(
+    gameRoom.player1,
+    JSON.stringify({
+      opcode: foundMatchOp,
+      gameRoom: gameRoom,
+    })
+  );
+}
+
 function checkPlayerList() {
   if (players.length >= 2) {
     var newGameRoom = {
@@ -143,6 +282,7 @@ function checkPlayerList() {
     };
     gameRooms.push(newGameRoom);
     console.log("gameroom established!");
+    console.log(newGameRoom);
     sendMessage(
       players[0],
       JSON.stringify({
@@ -209,21 +349,33 @@ function checkGameRoomReady(gameroom) {
 }
 
 function syncPlayerMovement(playerData) {
-  let gameRoom = getInGameRoom(playerData.id);
-  let oponentId;
-  if (playerData.sideNumber == 1) {
-    oponentId = gameRoom.player2;
-  } else {
-    oponentId = gameRoom.player1;
-  }
+  var gameRoom;
+  try {
+    gameRoom = getInGameRoom(playerData.id);
+    let oponentId;
+    if (playerData.sideNumber == 1) {
+      oponentId = gameRoom.player2;
+    } else {
+      oponentId = gameRoom.player1;
+    }
 
-  sendMessage(
-    oponentId,
-    JSON.stringify({
-      opcode: oponentMovementOp,
-      playerData: playerData,
-    })
-  );
+    sendMessage(
+      oponentId,
+      JSON.stringify({
+        opcode: oponentMovementOp,
+        playerData: playerData,
+      })
+    );
+  } catch (error) {
+    console.log("[ERROR] error in synchronizing player movement");
+    console.log(error);
+    // sendMessage(
+    //   playerData.id,
+    //   JSON.stringify({
+    //     opcode: oponentLeftOp,
+    //   })
+    // );
+  }
 }
 
 function playerScores(clientId) {
@@ -257,7 +409,7 @@ function setGameRoomScore(scoredPlayer, gameRoomId) {
       gameRoom.p1GameScore = 0;
       gameRoom.p2GameScore = 0;
       gameRoom.p1SetScore += 1;
-      if (gameRoom.p1SetScore >= gameRoom.sets) {
+      if (gameRoom.p1SetScore >= gameRoom.sets / 2) {
         gameEnds(1, gameRoom);
       } else {
         setEnds(1, gameRoom);
@@ -270,7 +422,7 @@ function setGameRoomScore(scoredPlayer, gameRoomId) {
       gameRoom.p1GameScore = 0;
       gameRoom.p2GameScore = 0;
       gameRoom.p2SetScore += 1;
-      if (gameRoom.p2SetScore >= gameRoom.sets) {
+      if (gameRoom.p2SetScore >= gameRoom.sets / 2) {
         gameEnds(2, gameRoom);
       } else {
         setEnds(2, gameRoom);

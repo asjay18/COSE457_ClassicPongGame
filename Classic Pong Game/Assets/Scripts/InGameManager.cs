@@ -26,10 +26,15 @@ public class InGameManager : MonoBehaviour
     private Node serverNode;
 
     private PlayerData player;
+    public GameObject youIndicatorText;
 
     public GameObject oponentLeftPanel;
     public GameObject youWonImage;
     public GameObject youLoseImage;
+    public GameObject youTakeImage;
+    public GameObject oponentTakeImage;
+    public GameObject youWonPanel;
+    public GameObject youLosePanel;
 
     public GameObject scoreManagerObj;
     private ScoreManager scoreManager;
@@ -59,11 +64,13 @@ public class InGameManager : MonoBehaviour
             player1status.text = "waiting";
             player2status.text = "ready?";
             playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(200,75);
+            youIndicatorText.GetComponent<RectTransform>().anchoredPosition = new Vector2(170, -210);
         } else
         {
             player1status.text = "ready?";
             player2status.text = "waiting";
             playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-200, 75);
+            youIndicatorText.GetComponent<RectTransform>().anchoredPosition = new Vector2(-170, -210);
         }
     }
 
@@ -102,8 +109,7 @@ public class InGameManager : MonoBehaviour
     public void OponentLeft()
     {
         actionBuffer.Enqueue(delegate {
-            StartSet();
-            //Todo stopset?
+            StopSet();
         });
         actionBuffer.Enqueue(delegate {
             oponentLeftPanel.SetActive(true);
@@ -115,18 +121,43 @@ public class InGameManager : MonoBehaviour
         if (player.sideNumber == 1) return leftPaddle;
         else return rightPaddle;
     }
+    IEnumerator WaitFor2Sec()
+    {
+        yield return new WaitForSecondsRealtime(2.0f);
+        serverNode.playerGameRoom.status = "playing";
+        leftPaddle.transform.position = new Vector3(-44, 0, 0);
+        leftPaddle.SetActive(true);
+        rightPaddle.transform.position = new Vector3(44, 0, 0);
+        rightPaddle.SetActive(true);
+        ball.SetActive(true);
+    }
 
     public void StartSet()
     {
         try
         {
+            serverNode.playerGameRoom.status = "set_done";
             ball.SetActive(false);
-            ball.SetActive(true);
-            leftPaddle.transform.position = new Vector3(-22, 0, 0);
-            leftPaddle.SetActive(true);
-            rightPaddle.transform.position = new Vector3(22, 0, 0);
-            rightPaddle.SetActive(true);
+            leftPaddle.SetActive(false);
+            rightPaddle.SetActive(false);
+
+            StartCoroutine(WaitFor2Sec());
         } catch (Exception e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    public void StopSet()
+    {
+        try
+        {
+            serverNode.playerGameRoom.status = "stopped";
+            ball.SetActive(false);
+            leftPaddle.SetActive(false);
+            rightPaddle.SetActive(false);
+        }
+        catch (Exception e)
         {
             Debug.Log(e);
         }
@@ -152,20 +183,28 @@ public class InGameManager : MonoBehaviour
     {
         if (player.sideNumber == 1)
         {
+            scoreSide = 2;
             actionBuffer.Enqueue(delegate {
+                youLoseImage.SetActive(true);
                 scoreManager.prWin();
             });
-            scoreSide = 2;
         }
         else
         {
+            scoreSide = 1;
             actionBuffer.Enqueue(delegate {
+                youLoseImage.SetActive(true);
                 scoreManager.plWin();
             });
-            scoreSide = 1;
         }
-        actionBuffer.Enqueue(delegate {
-            StartSet();
+    }
+
+    public void HandlePlayerScore()
+    {
+        scoreSide = player.sideNumber;
+        actionBuffer.Enqueue(delegate
+        {
+            youWonImage.SetActive(true);
         });
     }
 
@@ -179,10 +218,10 @@ public class InGameManager : MonoBehaviour
 
     public void SetWin()
     {
-        // 1√ ∞£ you won set!
         actionBuffer.Enqueue(delegate
         {
-            youWonImage.SetActive(true);
+            youWonImage.SetActive(false);
+            youTakeImage.SetActive(true);
         });
         scoreSide = player.sideNumber;
         actionBuffer.Enqueue(delegate {
@@ -194,11 +233,28 @@ public class InGameManager : MonoBehaviour
     {
         actionBuffer.Enqueue(delegate
         {
-            youLoseImage.SetActive(true);
+            youLoseImage.SetActive(false);
+            oponentTakeImage.SetActive(true);
         });
         scoreSide = 3 - player.sideNumber;
         actionBuffer.Enqueue(delegate {
             StartSet();
+        });
+    }
+
+    public void GameWin()
+    {
+        actionBuffer.Enqueue(delegate {
+            StopSet();
+            youWonPanel.SetActive(true);
+        });
+    }
+
+    public void GameLost()
+    {
+        actionBuffer.Enqueue(delegate {
+            StopSet();
+            youLosePanel.SetActive(true);
         });
     }
 }

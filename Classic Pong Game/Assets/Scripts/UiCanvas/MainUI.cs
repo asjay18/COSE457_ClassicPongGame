@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 public enum BTNType
 {
     PlayGame,
+    PlayGameWithFriendHOST,
+    PlayGameWithFriendCLIENT1,
+    PlayGameWithFriendCLIENT2,
     GoToMain,
     Ready,
     Exit,

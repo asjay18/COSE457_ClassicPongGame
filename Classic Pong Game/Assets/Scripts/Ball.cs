@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-    public float speed = 30.0f;
+    public float speed = 35.0f;
 
     public GameObject inGameManagerGameObject;
     private InGameManager inGameManager;
@@ -22,11 +22,18 @@ public class Ball : MonoBehaviour
         
         GameObject nodeObject = GameObject.Find("Node");
         serverNode = nodeObject.GetComponent<Node>();
-    }
+    }    
 
     private void OnEnable()
     {
-        if (inGameManager == null) return;
+        if (inGameManager == null)
+        {
+            inGameManager = inGameManagerGameObject.GetComponent<InGameManager>();
+            GameObject nodeObject = GameObject.Find("Node");
+            serverNode = nodeObject.GetComponent<Node>();
+
+            if (inGameManager == null) return;
+        }
         gameObject.transform.position = new Vector3(0, 0, -1);
         if (inGameManager.scoreSide == 1)
         {
@@ -69,6 +76,15 @@ public class Ball : MonoBehaviour
 
                 Vector2 newVelocity = 1.05f * speed * dir;
                 GetComponent<Rigidbody2D>().velocity = newVelocity;
+
+                serverNode.PlayerHits(
+                    new BallData(
+                        gameObject.transform.position.x,
+                        gameObject.transform.position.y,
+                        newVelocity.x,
+                        newVelocity.y
+                    )
+                );
             }
                 
         }

@@ -4,6 +4,7 @@ using System;
 using UnityEngine;
 
 using WebSocketSharp;
+using UnityEngine.SceneManagement;
 
 public class Node : MonoBehaviour
 {
@@ -20,14 +21,21 @@ public class Node : MonoBehaviour
     private GameObject igmObject;
     private InGameManager inGameManager;
 
-    private bool intentionalClose = false;
+    private bool findJgmObjectFlag = false;
+    private GameObject jgmObject;
+    private JoinGameManager joinGameManager;
+
+    public const string ResponseMatchRoomNumberOp = "3";
+    public const string CheckRoomNumberOp = "4";
+    public const string ResponseRoomNumberCheckOp = "5";
 
     public const string ResponseFoundMatchOp = "6";
     public const string PlayerReadyOp = "7";
     public const string PlayerReadyResOp = "8";
 
     public const string StartGameOp = "10";
-    public const string PlayingOp = "11";
+
+    public const string JoinGameErrorOp = "22";
 
     public const string PlayerMovementOp = "30";
     public const string OponentMovementOp = "31";
@@ -52,29 +60,12 @@ public class Node : MonoBehaviour
         _webSocket.OnOpen += (sender, openArgs) =>
         {
             Debug.Log("Connection open!");
-            intentionalClose = false;
         };
         _webSocket.OnClose += (sender, closeArgs) =>
         {
+            playerData.id = "";
             Debug.Log("Connection closed!");
         };
-        _webSocket.OnMessage += (sender, messageArgs) =>
-        {
-            ProcessReceivedMessage(messageArgs.Data);
-        };
-        _webSocket.OnError += (sender, error) =>
-        {
-            Debug.Log("Error! " + error.Message);
-            Debug.Log(error);
-        };
-    }
-    public void FindMatch()
-    {
-        // 서버에 연결
-        _webSocket = new WebSocket("ws://localhost:3333");
-        SetupWsCallbacks();
-        _webSocket.Connect();
-
         _webSocket.OnMessage += (sender, messageArgs) =>
         {
             if (messageArgs.IsText)
@@ -85,19 +76,55 @@ public class Node : MonoBehaviour
                     Debug.Log(tempPlayerData.id);
                     playerData.id = tempPlayerData.id;
                 }
-                return;
             }
+            ProcessReceivedMessage(messageArgs.Data);
         };
+        _webSocket.OnError += (sender, error) =>
+        {
+            Debug.Log("Error! " + error.Message);
+            Debug.Log(error);
+        };
+    }
+
+    public void OpenConnection()
+    {
+        if (_webSocket != null) _webSocket.Close();
+        _webSocket = new WebSocket("ws://localhost:3333");
+        SetupWsCallbacks();
+        _webSocket.Connect();
+    }
+
+    public void FindMatch(int gameType, string gameCode)
+    {
+        // 서버에 연결
+        OpenConnection();
+
+        GameMessage connectMessage = new GameMessage("OnMessage", gameType.ToString());
+        if (gameType == 2)
+        {
+            connectMessage.message = gameCode;
+        }
+        SendWebSocketMessage(JsonUtility.ToJson(connectMessage));      
+    }
+
+    public void JoinGameWithCode(string gameCode)
+    {
+        GameMessage connectMessage = new GameMessage("OnMessage", CheckRoomNumberOp);
+        connectMessage.message = gameCode;
+        SendWebSocketMessage(JsonUtility.ToJson(connectMessage));
     }
 
     public void ChangeFindIgmObjectFlag()
     {
         findIgmObjectFlag = true;
     }
+    public void ChangeFindJgmObjectFlag()
+    {
+        findJgmObjectFlag = true;
+    }
+
     public void Update()
     {
-        if (_webSocket == null) return;
-
         if (findIgmObjectFlag)
         {
             findIgmObjectFlag = false;
@@ -105,6 +132,14 @@ public class Node : MonoBehaviour
             inGameManager = igmObject.GetComponent<InGameManager>();
         }
 
+        if (findJgmObjectFlag)
+        {
+            findJgmObjectFlag = false;
+            jgmObject = GameObject.Find("JoinGameManager");
+            joinGameManager = jgmObject.GetComponent<JoinGameManager>();
+        }
+
+        if (_webSocket == null) return;
         if (playerRacket == null) return;
 
         if (playerGameRoom != null && playerGameRoom.status == "playing" && playerData.id != "")
@@ -133,6 +168,18 @@ public class Node : MonoBehaviour
         {
             handleMatchFound(gameMessage);
         }
+        else if (gameMessage.opcode == ResponseMatchRoomNumberOp)
+        {
+            handleMatchRoomNumberFound(gameMessage);
+        }
+        else if (gameMessage.opcode == ResponseRoomNumberCheckOp)
+        {
+            handleMatchRoomNumberChecked(gameMessage);
+        }
+        else if (gameMessage.opcode == JoinGameErrorOp)
+        {
+            handleMatchRoomCouldntJoin(gameMessage);
+        }
         else if (gameMessage.opcode == OponentMovementOp)
         {
             handleOponentPosition(gameMessage.playerData);
@@ -159,10 +206,29 @@ public class Node : MonoBehaviour
         }
         else if (gameMessage.opcode == GameEndOp)
         {
-            Debug.Log("you won~");
+            if (gameMessage.message == "PLAYER 1")
+            {
+                if (playerData.sideNumber == 1)
+                {
+                    inGameManager.GameWin();
+                }
+                else
+                {
+                    inGameManager.GameLost();
+                }
+            }
+            else
+            {
+                if (playerData.sideNumber == 1)
+                {
+                    inGameManager.GameLost();
+                }
+                else
+                {
+                    inGameManager.GameWin();
+                }
+            }
             QuitGame();
-            // show back to menu, quit option page
-            // show confetti
         }
         else if (gameMessage.opcode == SetEndOp)
         {
@@ -192,8 +258,11 @@ public class Node : MonoBehaviour
     }
     public void QuitGame()
     {
-        intentionalClose = true;
-        _webSocket.Close();
+        if(_webSocket != null)
+        {
+            _webSocket.Close();
+            _webSocket = null;
+        }
     }
 
     public void PlayerIsReady()
@@ -206,6 +275,7 @@ public class Node : MonoBehaviour
     {
         GameMessage playerScoresMes = new GameMessage("OnMessage", PlayerScoresOp);
         SendWebSocketMessage(JsonUtility.ToJson(playerScoresMes));
+        inGameManager.HandlePlayerScore();
     }
 
     public void PlayerHits(BallData ballData)
@@ -215,6 +285,40 @@ public class Node : MonoBehaviour
         SendWebSocketMessage(JsonUtility.ToJson(playerHitsMes));
     }
 
+    private void handleMatchRoomNumberFound(GameMessage gameMessage)
+    {
+        try
+        {
+            WaitForPlayer.SetRoomNumber(gameMessage.message);
+        }
+        catch (Exception e)
+        {
+            Debug.Log(e);
+            Debug.Log("Game can't start...");
+        }
+    }
+
+    private void handleMatchRoomNumberChecked(GameMessage gameMessage)
+    {
+        if (gameMessage.message == "join")
+        {
+            WaitForPlayer.LoadGameSceneHandler("InGameScene", 2, gameMessage.gameRoom.id);
+            joinGameManager.LoadWaitScene();
+        }
+        else
+        {
+            joinGameManager.SetJoinError(gameMessage.message);
+        }
+    }
+
+    private void handleMatchRoomCouldntJoin(GameMessage gameMessage)
+    {
+        Debug.Log("Game can't start...");
+        Debug.Log(gameMessage.message);
+        QuitGame();
+        SceneManager.LoadScene("mainScene");
+    }
+
     private void handleMatchFound(GameMessage gameMessage)
     {
         try
@@ -222,6 +326,7 @@ public class Node : MonoBehaviour
             GameRoom gameRoom = gameMessage.gameRoom;
             if (gameRoom.player1 == playerData.id) playerData.sideNumber = 1;
             else playerData.sideNumber = 2;
+            Debug.Log(playerData.sideNumber);
 
             WaitForPlayer.SetFoundMatch(true);
         }
@@ -267,8 +372,7 @@ public class Node : MonoBehaviour
         catch (Exception e)
         {
             Debug.Log(e);
-        }       
-        
+        }
     }
 
     private void handleEndGame()
