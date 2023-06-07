@@ -27,12 +27,13 @@ public class InGameManager : MonoBehaviour
 
     private PlayerData player;
     public GameObject youIndicatorText;
+    public GameObject gameStartImage;
 
     public GameObject oponentLeftPanel;
     public GameObject youWonImage;
     public GameObject youLoseImage;
-    public GameObject youTakeImage;
-    public GameObject oponentTakeImage;
+    public GameObject youWonSetImage;
+    public GameObject youLoseSetImage;
     public GameObject youWonPanel;
     public GameObject youLosePanel;
 
@@ -61,15 +62,15 @@ public class InGameManager : MonoBehaviour
 
         if (isRight)
         {
-            player1status.text = "waiting";
-            player2status.text = "ready?";
-            playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(200,75);
+            player1status.text = "waiting..";
+            player2status.text = "u ready?";
+            playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(195,75);
             youIndicatorText.GetComponent<RectTransform>().anchoredPosition = new Vector2(170, -210);
         } else
         {
-            player1status.text = "ready?";
-            player2status.text = "waiting";
-            playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-200, 75);
+            player1status.text = "u ready?";
+            player2status.text = "waiting..";
+            playerBlinker.GetComponent<RectTransform>().anchoredPosition = new Vector2(-195, 75);
             youIndicatorText.GetComponent<RectTransform>().anchoredPosition = new Vector2(-170, -210);
         }
     }
@@ -98,8 +99,8 @@ public class InGameManager : MonoBehaviour
     }
     public void GameStart()
     {
-        // Game Starts in 3..2..1.. (효과 넣고 싶다!!)
         actionBuffer.Enqueue(delegate {
+            gameStartImage.SetActive(true);
             StartSet();
         });
         actionBuffer.Enqueue(delegate {
@@ -221,7 +222,7 @@ public class InGameManager : MonoBehaviour
         actionBuffer.Enqueue(delegate
         {
             youWonImage.SetActive(false);
-            youTakeImage.SetActive(true);
+            youWonSetImage.SetActive(true);
         });
         scoreSide = player.sideNumber;
         actionBuffer.Enqueue(delegate {
@@ -234,7 +235,7 @@ public class InGameManager : MonoBehaviour
         actionBuffer.Enqueue(delegate
         {
             youLoseImage.SetActive(false);
-            oponentTakeImage.SetActive(true);
+            youLoseSetImage.SetActive(true);
         });
         scoreSide = 3 - player.sideNumber;
         actionBuffer.Enqueue(delegate {
