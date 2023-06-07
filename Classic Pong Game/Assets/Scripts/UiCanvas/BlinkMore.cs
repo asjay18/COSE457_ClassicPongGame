@@ -9,9 +9,12 @@ public class BlinkMore : MonoBehaviour
     public Transform imageScale;
     Vector3 defaultScale;
 
+    private Color defaultColor;
+
     private void Start()
     {
         defaultScale = imageScale.localScale;
+        defaultColor = gameObject.GetComponent<RawImage>().color;
     }
 
     // Update is called once per frame
@@ -20,11 +23,11 @@ public class BlinkMore : MonoBehaviour
             timeCount += Time.deltaTime;
             if (timeCount < 0.5f)
             {
-                gameObject.GetComponent<RawImage>().color = new Color(1, 1, 1, 1 - timeCount);
+                gameObject.GetComponent<RawImage>().color = new Color(defaultColor.r, defaultColor.g, defaultColor.b, 1 - timeCount);
             }
             else
             {
-                gameObject.GetComponent<RawImage>().color = new Color(1, 1, 1, timeCount);
+                gameObject.GetComponent<RawImage>().color = new Color(defaultColor.r, defaultColor.g, defaultColor.b, timeCount);
                 if (timeCount > 1.0f)
                 {
                     timeCount = 0.0f;

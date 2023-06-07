@@ -40,9 +40,9 @@ public class ScoreManager : MonoBehaviour
         }
         plScoreText.text = plScore.ToString();
         inGameManager.StartSet();
-        if (plRound == 3)
+        if (plRound == 2)
         {
-            endGame(1);
+            inGameManager.StopSet();
         }
     }
     public void prWin()
@@ -58,14 +58,9 @@ public class ScoreManager : MonoBehaviour
         }
         prScoreText.text = prScore.ToString();
         inGameManager.StartSet();
-        if (prRound == 3)
+        if (prRound == 2)
         {
-            endGame(2);
+            inGameManager.StopSet();
         }
-    }
-
-    public void endGame(int winner)
-    {
-        // end game?
     }
 }

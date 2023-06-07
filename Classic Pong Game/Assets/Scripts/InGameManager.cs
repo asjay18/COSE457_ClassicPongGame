@@ -82,7 +82,6 @@ public class InGameManager : MonoBehaviour
         {
             actionBuffer.Dequeue().Invoke();
         }
-
     }
 
     public void Player1Ready()
@@ -186,7 +185,6 @@ public class InGameManager : MonoBehaviour
         {
             scoreSide = 2;
             actionBuffer.Enqueue(delegate {
-                youLoseImage.SetActive(true);
                 scoreManager.prWin();
             });
         }
@@ -194,10 +192,15 @@ public class InGameManager : MonoBehaviour
         {
             scoreSide = 1;
             actionBuffer.Enqueue(delegate {
-                youLoseImage.SetActive(true);
                 scoreManager.plWin();
             });
         }
+        actionBuffer.Enqueue(delegate {
+            if (!youLoseSetImage.activeInHierarchy)
+            {
+                youLoseImage.SetActive(true);
+            }
+        });
     }
 
     public void HandlePlayerScore()
@@ -219,27 +222,20 @@ public class InGameManager : MonoBehaviour
 
     public void SetWin()
     {
-        actionBuffer.Enqueue(delegate
-        {
-            youWonImage.SetActive(false);
-            youWonSetImage.SetActive(true);
-        });
         scoreSide = player.sideNumber;
         actionBuffer.Enqueue(delegate {
             StartSet();
+            youWonImage.SetActive(false);
+            youWonSetImage.SetActive(true);
         });
     }
 
     public void SetLost()
     {
-        actionBuffer.Enqueue(delegate
-        {
-            youLoseImage.SetActive(false);
-            youLoseSetImage.SetActive(true);
-        });
         scoreSide = 3 - player.sideNumber;
         actionBuffer.Enqueue(delegate {
-            StartSet();
+            StartSet(); 
+            youLoseSetImage.SetActive(true);
         });
     }
 
