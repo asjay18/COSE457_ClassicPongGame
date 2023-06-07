@@ -25,6 +25,8 @@ public class Node : MonoBehaviour
     private GameObject jgmObject;
     private JoinGameManager joinGameManager;
 
+    private bool playerMoved = false;
+
     public const string ResponseMatchRoomNumberOp = "3";
     public const string CheckRoomNumberOp = "4";
     public const string ResponseRoomNumberCheckOp = "5";
@@ -122,6 +124,10 @@ public class Node : MonoBehaviour
     {
         findJgmObjectFlag = true;
     }
+    public void ChangePlayerMoveFlag()
+    {
+        playerMoved = true;
+    }
 
     public void Update()
     {
@@ -142,8 +148,9 @@ public class Node : MonoBehaviour
         if (_webSocket == null) return;
         if (playerRacket == null) return;
 
-        if (playerGameRoom != null && playerGameRoom.status == "playing" && playerData.id != "")
+        if (playerMoved && playerGameRoom.status == "playing" && playerData.id != "" )
         {
+            playerMoved = false;
             playerData.xPos = playerRacket.transform.position.x;
             playerData.yPos = playerRacket.transform.position.y;
 

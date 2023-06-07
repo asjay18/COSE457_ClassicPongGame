@@ -10,9 +10,12 @@ public class Move_Racket : MonoBehaviour
     public GameObject rightSideGameObject;
     private RightSide rightSideVariable;
 
+    private Node serverNode;
+
     void Start()
     {
         rightSideVariable = rightSideGameObject.GetComponent<RightSide>();
+        serverNode = GameObject.Find("Node").GetComponent<Node>();
     }
     void FixedUpdate()
     {
@@ -21,6 +24,7 @@ public class Move_Racket : MonoBehaviour
             float v = Input.GetAxisRaw("Vertical");
             float h = Input.GetAxisRaw("Horizontal");
             GetComponent<Rigidbody2D>().velocity = new Vector2(h, v) * speed;
+            serverNode.ChangePlayerMoveFlag();
         }   
     }
 }

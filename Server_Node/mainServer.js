@@ -96,17 +96,17 @@ function newPlayer(clientId) {
 function deletePlayerAndGameRoom(clientId) {
   console.log(`client ${clientId} left the game...`);
   try {
-    deletePlayer(clientId);
-  } catch (error) {
-    console.log(error);
-  }
-  try {
     const gameRoom = getInGameRoom(clientId);
     if (gameRoom != undefined) {
       deleteGameRoom(gameRoom.id);
     }
   } catch (error) {
     console.log("there's something wrong...");
+    console.log(error);
+  }
+  try {
+    deletePlayer(clientId);
+  } catch (error) {
     console.log(error);
   }
 }
@@ -116,7 +116,6 @@ function deletePlayer(clientId) {
   if (index !== -1) {
     players.splice(index, 1);
   }
-  console.log(players.length);
 }
 
 function deleteGameRoom(gameroomId) {
@@ -246,7 +245,6 @@ function joinFriendGameRoom(clientId, gameRoomId) {
 
   console.log(`Client ${clientId} join GameRoom ${gameRoom.id}`);
   gameRoom.player2 = clientId;
-  console.log(gameRoom);
 
   sendMessage(
     gameRoom.player2,
@@ -282,7 +280,6 @@ function checkPlayerList() {
     };
     gameRooms.push(newGameRoom);
     console.log("gameroom established!");
-    console.log(newGameRoom);
     sendMessage(
       players[0],
       JSON.stringify({
@@ -332,7 +329,6 @@ function checkPlayerReady(clientId) {
 function checkGameRoomReady(gameroom) {
   if (gameroom.p1status && gameroom.p2status) {
     console.log("gameroom " + gameroom.id + " start game!");
-    console.log(gameroom);
     sendMessage(
       gameroom.player1,
       JSON.stringify({
@@ -383,11 +379,9 @@ function playerScores(clientId) {
   let oponentId;
 
   if (gameRoom.player1 == clientId) {
-    console.log("player 1 scores");
     oponentId = gameRoom.player2;
     setGameRoomScore(1, gameRoom.id);
   } else {
-    console.log("player 2 scores");
     oponentId = gameRoom.player1;
     setGameRoomScore(2, gameRoom.id);
   }
@@ -436,10 +430,8 @@ function playerHits(clientId, ballData) {
   let oponentId;
 
   if (gameRoom.player1 == clientId) {
-    console.log("player 1 hits");
     oponentId = gameRoom.player2;
   } else {
-    console.log("player 2 hits");
     oponentId = gameRoom.player1;
   }
 
@@ -453,6 +445,7 @@ function playerHits(clientId, ballData) {
 }
 
 function gameEnds(winner, gameRoom) {
+  console.log(`final winner is player ${winner}!`);
   sendMessage(
     gameRoom.player1,
     JSON.stringify({
