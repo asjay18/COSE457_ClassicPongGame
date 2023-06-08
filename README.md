@@ -9,6 +9,14 @@ Classic PvP Pong Game
 * Node v19.8.0
 * websocket v1.0.34
 
+## 실행 방법
+```
+[Server Side]
+node mainServer.js
+[Client Side]
+Classic Pong Game.exe 파일 실행
+```
+
 ## 프로젝트 소개
 ### 시연영상
 https://youtu.be/z-Xzc76nKnQ
