@@ -12,7 +12,7 @@ Classic PvP Pong Game
 ## 실행 방법
 ```
 [Server Side]
-node mainServer.js
+node erver.js
 [Client Side]
 Classic Pong Game.exe 파일 실행
 ```
