@@ -21,13 +21,13 @@ Classic Pong Game.exe 파일 실행
 ### 시연영상
 https://youtu.be/z-Xzc76nKnQ
 ### 발표자료
-![텀 프로젝트 최종 발표자료_1](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/4f2784f8-3beb-46b7-a70e-4f5fe493191a)
-![텀 프로젝트 최종 발표자료_2](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/6c22179c-db56-4e7e-bc4d-8cbd6e1d9ad4)
-![텀 프로젝트 최종 발표자료_3](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/da1b6e5f-9cf2-4fba-94bb-5e84e1fe5788)
-![텀 프로젝트 최종 발표자료_4](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/788cae6f-6ffb-424c-afe0-b7c409fae887)
-![텀 프로젝트 최종 발표자료_5](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/5fbce99f-0204-49d0-80c6-709fccdd9519)
-![텀 프로젝트 최종 발표자료_6](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/244f53c1-7a2e-43fd-81f6-7e395a7b81a9)
-![텀 프로젝트 최종 발표자료_7](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/9a02f302-8c0a-490d-9ed2-0c93196d0449)
-![텀 프로젝트 최종 발표자료_8](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/c8799083-c75c-4216-9ef1-8c5651cd051b)
-![텀 프로젝트 최종 발표자료_10](https://github.com/asjay18/COSE457_ClassicPongGame/assets/90694107/cddd1538-9959-4438-94c8-8a045441b659)
-
+![텀 프로젝트 최종 발표자료_1](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/0453accf-c9f4-4bfa-a9f3-d8b0d753f58d)
+![텀 프로젝트 최종 발표자료_2](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/b5a58afd-9bde-475b-a058-dec2adef356b)
+![텀 프로젝트 최종 발표자료_3](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/e572adb2-5705-41fa-be5f-bc8655764fb9)
+![텀 프로젝트 최종 발표자료_4](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/e509a692-8cab-4847-a4fb-f7a4a8ebb863)
+![텀 프로젝트 최종 발표자료_5](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/db1c968f-c5f6-44db-8174-d53032fc9b25)
+![텀 프로젝트 최종 발표자료_6](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/43ca3286-26d5-48c6-9d18-dd21ded9f245)
+![텀 프로젝트 최종 발표자료_7](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/6cc57bd6-d7cd-45d5-8030-e5a2694a9491)
+![텀 프로젝트 최종 발표자료_8](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/ff0c779a-0600-43e4-b829-867b23aef8ee)
+![텀 프로젝트 최종 발표자료_9](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/281e48a5-e33b-4564-abab-13d5171361cb)
+![텀 프로젝트 최종 발표자료_10](https://github.com/counttoten/COSE457_ClassicPongGame/assets/90694107/cf2fe3e1-e0ad-433c-bf63-b18b370e7211)
